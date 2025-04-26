@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧水利监测系统 - 高级可视化</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --secondary-color: #00a8ff;
+            --accent-color: #00ccff;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+        
+        .main-container {
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: bold;
+        }
+        
+        .viz-type-btn {
+            border-radius: 20px;
+            padding: 8px 20px;
+            margin: 5px;
+            transition: all 0.3s;
+            background-color: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .viz-type-btn:hover, .viz-type-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .viz-type-btn i {
+            margin-right: 5px;
+        }
+        
+        .footer {
+            background-color: var(--dark-bg);
+            color: white;
+            padding: 20px 0;
+            margin-top: 30px;
+        }
+        
+        /* 添加水波纹动画效果 */
+        .water-wave {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .water-wave::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(ellipse at center, rgba(0, 102, 204, 0.1) 0%, rgba(0, 102, 204, 0) 70%);
+            animation: wave 15s linear infinite;
+            z-index: 0;
+        }
+        
+        @keyframes wave {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-droplet-fill me-2"></i>智慧水利监测系统
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="bi bi-house-door me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('advanced_visualization') }}">
+                            <i class="bi bi-graph-up me-1"></i>高级可视化
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="text-light me-3">
+                        <i class="bi bi-person-circle me-1"></i>{{ username }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-right me-1"></i>退出
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="container main-container">
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% else %}
+        
+        <!-- 可视化类型选择 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-sliders me-2"></i>选择可视化类型
+            </div>
+            <div class="card-body text-center">
+                <a href="{{ url_for('advanced_visualization', type='heatmap') }}" class="btn viz-type-btn {% if viz_type == 'heatmap' %}active{% endif %}">
+                    <i class="bi bi-grid-3x3"></i>热力图
+                </a>
+                <a href="{{ url_for('advanced_visualization', type='3d') }}" class="btn viz-type-btn {% if viz_type == '3d' %}active{% endif %}">
+                    <i class="bi bi-box"></i>3D表面图
+                </a>
+                <a href="{{ url_for('advanced_visualization', type='radar') }}" class="btn viz-type-btn {% if viz_type == 'radar' %}active{% endif %}">
+                    <i class="bi bi-reception-4"></i>雷达图
+                </a>
+                <a href="{{ url_for('advanced_visualization', type='map') }}" class="btn viz-type-btn {% if viz_type == 'map' %}active{% endif %}">
+                    <i class="bi bi-geo-alt"></i>地图可视化
+                </a>
+                <a href="{{ url_for('advanced_visualization', type='animation') }}" class="btn viz-type-btn {% if viz_type == 'animation' %}active{% endif %}">
+                    <i class="bi bi-play-circle"></i>动画可视化
+                </a>
+            </div>
+        </div>
+        
+        <!-- 可视化图表 -->
+        <div class="card mb-4 water-wave">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    {% if viz_type == 'heatmap' %}
+                        <i class="bi bi-grid-3x3 me-2"></i>水文数据热力图
+                    {% elif viz_type == '3d' %}
+                        <i class="bi bi-box me-2"></i>水文数据3D表面图
+                    {% elif viz_type == 'radar' %}
+                        <i class="bi bi-reception-4 me-2"></i>水文指标雷达图
+                    {% elif viz_type == 'map' %}
+                        <i class="bi bi-geo-alt me-2"></i>水文地理分布图
+                    {% elif viz_type == 'animation' %}
+                        <i class="bi bi-play-circle me-2"></i>水文数据动态变化
+                    {% endif %}
+                </span>
+            </div>
+            <div class="card-body">
+                {{ plot_html|safe }}
+            </div>
+        </div>
+        
+        <!-- 可视化说明 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i>可视化说明
+            </div>
+            <div class="card-body">
+                {% if viz_type == 'heatmap' %}
+                <p>热力图展示了不同时间点各项水文指标的强度变化，颜色越深表示数值越高。通过热力图可以直观地看出各指标随时间的变化趋势和相互关系。</p>
+                {% elif viz_type == '3d' %}
+                <p>3D表面图将水位和流量数据在三维空间中展示，可以更直观地观察水文数据的起伏变化，帮助分析水文系统的动态特性。</p>
+                {% elif viz_type == 'radar' %}
+                <p>雷达图将各项水文指标在同一个图表中进行比较，每个轴代表一个指标，可以快速识别各指标的相对强度和整体平衡情况。</p>
+                {% elif viz_type == 'map' %}
+                <p>地图可视化展示了监测点的地理位置和相应的水文数据，通过颜色和大小变化反映不同区域的水文状况，有助于进行空间分析。</p>
+                {% elif viz_type == 'animation' %}
+                <p>动画可视化展示了水文数据随时间的动态变化过程，通过播放动画可以观察水文系统的演变规律，发现潜在的周期性和异常变化。</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p>© 2025 智慧水利监测系统 | 版权所有</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

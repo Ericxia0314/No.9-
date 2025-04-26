@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧水利监测系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --secondary-color: #00a8ff;
+            --accent-color: #00ccff;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+        
+        .main-container {
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: bold;
+        }
+        
+        .data-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .data-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+        
+        .data-label {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+        
+        .data-unit {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+        
+        .data-icon {
+            font-size: 2rem;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+        
+        .pagination {
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .page-link {
+            color: var(--primary-color);
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-collect {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-collect:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.05);
+        }
+        
+        .footer {
+            background-color: var(--dark-bg);
+            color: white;
+            padding: 20px 0;
+            margin-top: 30px;
+        }
+        
+        /* 添加水波纹动画效果 */
+        .water-wave {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .water-wave::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(ellipse at center, rgba(0, 102, 204, 0.1) 0%, rgba(0, 102, 204, 0) 70%);
+            animation: wave 15s linear infinite;
+            z-index: 0;
+        }
+        
+        @keyframes wave {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-droplet-fill me-2"></i>智慧水利监测系统
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('index') }}">
+                            <i class="bi bi-house-door me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('advanced_visualization') }}">
+                            <i class="bi bi-graph-up me-1"></i>高级可视化
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="text-light me-3">
+                        <i class="bi bi-person-circle me-1"></i>{{ username }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-right me-1"></i>退出
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="container main-container">
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% else %}
+        
+        <!-- 数据卡片 -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card data-card water-wave">
+                    <div class="data-icon">
+                        <i class="bi bi-water"></i>
+                    </div>
+                    <div class="data-value">{{ "%.2f"|format(current_data.water_level) }}</div>
+                    <div class="data-label">当前水位</div>
+                    <div class="data-unit">米</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card data-card water-wave">
+                    <div class="data-icon">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </div>
+                    <div class="data-value">{{ "%.2f"|format(current_data.flow_rate) }}</div>
+                    <div class="data-label">当前流量</div>
+                    <div class="data-unit">立方米/秒</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card data-card water-wave">
+                    <div class="data-icon">
+                        <i class="bi bi-cloud-rain"></i>
+                    </div>
+                    <div class="data-value">{{ "%.2f"|format(current_data.rainfall) }}</div>
+                    <div class="data-label">降水量</div>
+                    <div class="data-unit">毫米</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card data-card water-wave">
+                    <div class="data-icon">
+                        <i class="bi bi-sun"></i>
+                    </div>
+                    <div class="data-value">{{ "%.2f"|format(current_data.evaporation) }}</div>
+                    <div class="data-label">蒸发量</div>
+                    <div class="data-unit">毫米</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 可视化图表 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>水文数据可视化</span>
+                <button id="collectBtn" class="btn btn-collect btn-sm">
+                    <i class="bi bi-arrow-repeat me-1"></i>采集新数据
+                </button>
+            </div>
+            <div class="card-body">
+                {{ plot_html|safe }}
+            </div>
+        </div>
+        
+        <!-- 分页导航 -->
+        <nav>
+            <ul class="pagination">
+                {% if current_page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('index', page=current_page-1) }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for p in range(1, 4) %}
+                <li class="page-item {% if p == current_page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('index', page=p) }}">{{ p }}</a>
+                </li>
+                {% endfor %}
+                
+                {% if current_page < 3 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('index', page=current_page+1) }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p>© 2025 智慧水利监测系统 | 版权所有</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const collectBtn = document.getElementById('collectBtn');
+            if (collectBtn) {
+                collectBtn.addEventListener('click', function() {
+                    collectBtn.disabled = true;
+                    collectBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>数据采集中...';
+                    
+                    fetch('/collect_data', {
+                        method: 'POST',
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('数据采集成功！');
+                            location.reload();
+                        } else {
+                            alert('数据采集失败: ' + data.message);
+                            collectBtn.disabled = false;
+                            collectBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>采集新数据';
+                        }
+                    })
+                    .catch(error => {
+                        alert('请求错误: ' + error);
+                        collectBtn.disabled = false;
+                        collectBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>采集新数据';
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

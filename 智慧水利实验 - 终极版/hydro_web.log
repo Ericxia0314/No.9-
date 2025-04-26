@@ -1,0 +1,7 @@
+2025-04-25 23:04:33,504 - 服务器启动在 http://127.0.0.1:5000
+2025-04-25 23:04:33,504 - Serving on http://127.0.0.1:5000
+2025-04-25 23:04:38,279 - 页面渲染错误: must be real number, not str
+2025-04-25 23:04:44,999 - 页面渲染错误: must be real number, not str
+2025-04-25 23:04:51,151 - 页面渲染错误: must be real number, not str
+2025-04-25 23:09:19,830 - 数据库错误: 1146 (42S02): Table 'hydro_monitoring.users' doesn't exist
+2025-04-25 23:09:30,126 - 数据库错误: 1146 (42S02): Table 'hydro_monitoring.users' doesn't exist
